@@ -12,9 +12,11 @@ describe('[Challenge] Truster', function () {
 
         const DamnValuableToken = await ethers.getContractFactory('DamnValuableToken', deployer);
         const TrusterLenderPool = await ethers.getContractFactory('TrusterLenderPool', deployer);
+        const Attacker = await ethers.getContractFactory('Attacker', deployer);
 
         this.token = await DamnValuableToken.deploy();
         this.pool = await TrusterLenderPool.deploy(this.token.address);
+        this.attackerContract = await Attacker.deploy(this.pool.address,this.token.address)
 
         await this.token.transfer(this.pool.address, TOKENS_IN_POOL);
 
@@ -29,6 +31,7 @@ describe('[Challenge] Truster', function () {
 
     it('Exploit', async function () {
         /** CODE YOUR EXPLOIT HERE  */
+        await this.attackerContract.connect(attacker).attack()
     });
 
     after(async function () {
@@ -36,7 +39,7 @@ describe('[Challenge] Truster', function () {
 
         // Attacker has taken all tokens from the pool
         expect(
-            await this.token.balanceOf(attacker.address)
+            await this.token.balanceOf(this.attackerContract.address)
         ).to.equal(TOKENS_IN_POOL);
         expect(
             await this.token.balanceOf(this.pool.address)
